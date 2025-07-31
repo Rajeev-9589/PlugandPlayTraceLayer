@@ -1,4 +1,4 @@
-import { logRequest, checkRateLimit } from './helpers.js';
+import { logRequest, checkRateLimit } from './helper.js';
 
 const traceMiddleware = async (req, res, next) => {
   try {
