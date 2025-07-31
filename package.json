@@ -1,0 +1,15 @@
+{
+  "name": "tracelayer",
+  "version": "1.0.0",
+  "description": "Plugandplay Version of tracelayer, open source project at the githhub -https://github.com/Rajeev-9589/TraceLayer.git",
+  "main": "core/traceMiddleware.js",
+  "type": "module",
+  "keywords": ["express", "middleware", "security", "rate-limit", "monitoring"],
+  "author": "Rajeev Bhorgade",
+  "license": "MIT",
+  "dependencies": {
+    "mongoose": "^7.6.0"
+  }
+}
+
+
