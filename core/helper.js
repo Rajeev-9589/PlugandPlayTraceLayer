@@ -3,13 +3,43 @@ import {
   ActivityLog,
   SuspiciousRequest,
   BlockedIP,
+  LoginAttempt
 } from './config.js';
 
 const DEFAULT_RATE_LIMIT = 20;
 const DEFAULT_WINDOW_MS = 60 * 1000;
 const COOLDOWN_DURATION = 5 * 60 * 1000; // 5 minutes
 
+// For Login Attempts
+const LOGIN_WINDOW_MS = 10 * 60 * 1000; // 10 mins
+const LOGIN_FAIL_THRESHOLD = 5; // Default 
+
 const ipRequestMap = new Map();
+
+export const logLoginAttempt = async (appId, userId, ip, status) => {
+  const attempt = new LoginAttempt({
+    appId,
+    userId,
+    ip,
+    status,
+    timestamp: Date.now(),
+  });
+  await attempt.save();
+};
+// check login rate 
+export const checkLoginRate = async (appId, ip, userId) => {
+  const cutoff = Date.now() - LOGIN_WINDOW_MS;
+
+  const count = await LoginAttempt.countDocuments({
+    appId,
+    ip,
+    userId,
+    status: 'fail',
+    timestamp: { $gt: cutoff },
+  });
+
+  return count >= LOGIN_FAIL_THRESHOLD;
+};
 // Fetch rate limit settings from DB (fallback to default)
 export const getAppRateLimitConfig = async (appId) => {
   const config = await AppConfig.findOne({ appId });
