@@ -14,7 +14,7 @@ const traceMiddleware = async (req, res, next) => {
       return res.status(429).json({ msg: 'You are being rate limited or blocked' });
     }
 
-    await logRequest(appId, req);
+    await logRequest(appId, req, userId);
 
     next();
   } catch (err) {
