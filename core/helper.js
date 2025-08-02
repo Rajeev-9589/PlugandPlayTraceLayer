@@ -1,13 +1,28 @@
-import { ActivityLog, SuspiciousRequest, BlockedIP } from './config.js';
+import {
+  AppConfig,
+  ActivityLog,
+  SuspiciousRequest,
+  BlockedIP,
+} from './config.js';
 
-const RATE_LIMIT = 20;
-const WINDOW_MS = 60 * 1000;
+const DEFAULT_RATE_LIMIT = 20;
+const DEFAULT_WINDOW_MS = 60 * 1000;
 const COOLDOWN_DURATION = 5 * 60 * 1000; // 5 minutes
 
 const ipRequestMap = new Map();
+// Fetch rate limit settings from DB (fallback to default)
+export const getAppRateLimitConfig = async (appId) => {
+  const config = await AppConfig.findOne({ appId });
+  return {
+    rateLimit: config?.rateLimitMax || DEFAULT_RATE_LIMIT,
+    windowMs: config?.windowMs || DEFAULT_WINDOW_MS,
+  };
+};
 
+// Logrequest saving
 export const logRequest = async (appId, req) => {
   const { ip, originalUrl, method, headers } = req;
+  const userId = headers['x-user-id'] || '';
 
   const log = new ActivityLog({
     appId,
@@ -16,16 +31,18 @@ export const logRequest = async (appId, req) => {
     method,
     userAgent: headers['user-agent'],
     timestamp: Date.now(),
+    userId,
+    synced: false,
   });
 
   await log.save();
 };
-
-export const checkRateLimit = async (appId, ip) => {
-  const key = `${appId}-${ip}`;
+// 🔹 Updated: dynamic rate config + userId tracking
+export const checkRateLimit = async (appId, ip, userId = '') => {
+  const { rateLimit, windowMs } = await getAppRateLimitConfig(appId);
   const currentTime = Date.now();
+  const key = `${appId}-${ip}`;
 
-  // Cooldown Check
   const cooldown = await BlockedIP.findOne({
     appId,
     ip,
@@ -33,30 +50,25 @@ export const checkRateLimit = async (appId, ip) => {
     unblockAt: { $gt: currentTime },
   });
 
-  if (cooldown) {
-    return true;
-  }
+  if (cooldown) return true;
 
-  // In-memory request tracking
   if (!ipRequestMap.has(key)) {
     ipRequestMap.set(key, []);
   }
 
-  const timestamps = ipRequestMap.get(key).filter(t => currentTime - t < WINDOW_MS);
+  const timestamps = ipRequestMap.get(key).filter(t => currentTime - t < windowMs);
   timestamps.push(currentTime);
   ipRequestMap.set(key, timestamps);
 
-  if (timestamps.length > RATE_LIMIT) {
-    // Save to suspicious
-    const suspicious = new SuspiciousRequest({
+  if (timestamps.length > rateLimit) {
+    await SuspiciousRequest.create({
       appId,
       ip,
       attempts: timestamps.length,
       timestamp: currentTime,
+      userId,
     });
-    await suspicious.save();
 
-    // Add cooldown block
     await BlockedIP.create({
       appId,
       ip,
@@ -72,10 +84,15 @@ export const checkRateLimit = async (appId, ip) => {
 };
 
 // Get all currently blocked IPs for dashboard
+
 export const getBlockedIPs = async (appId) => {
   const now = Date.now();
   const list = await BlockedIP.find({ appId, unblockAt: { $gt: now } });
-  return list.map(b => ({ ip: b.ip, reason: b.reason, unblockAt: b.unblockAt }));
+  return list.map(b => ({
+    ip: b.ip,
+    reason: b.reason,
+    unblockAt: b.unblockAt,
+  }));
 };
 
 // Manually block an IP
@@ -86,6 +103,6 @@ export const manuallyBlockIP = async (appId, ip) => {
     ip,
     reason: 'manual',
     blockedAt: currentTime,
-    unblockAt: currentTime + 24 * 60 * 60 * 1000, // 24 hr block
+    unblockAt: currentTime + 24 * 60 * 60 * 1000,
   });
 };
