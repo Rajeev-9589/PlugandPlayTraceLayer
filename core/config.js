@@ -8,15 +8,13 @@ await mongoose.connect(MONGO_URI, {
   useUnifiedTopology: true,
 });
 
-// Dev Schema
-const DevUserSchema = new mongoose.Schema({
-  name: String,
-  email: String,
-  appId: String,
-  apiKey: String,
-  password: String,
+// App-specific config (for rate limits)
+const AppConfigSchema = new mongoose.Schema({
+  appId: { type: String, unique: true },
+  rateLimitMax: Number,
+  windowMs: Number,
 });
-const DevUser = mongoose.model('DevUser', DevUserSchema);
+const AppConfig = mongoose.model('AppConfig', AppConfigSchema);
 
 // Activity Log Schema
 const ActivityLogSchema = new mongoose.Schema({
@@ -26,6 +24,8 @@ const ActivityLogSchema = new mongoose.Schema({
   method: String,
   userAgent: String,
   timestamp: Number,
+  userId: String,         
+  synced: Boolean,        //Flag For Firestore sync
 });
 const ActivityLog = mongoose.model('ActivityLog', ActivityLogSchema);
 
@@ -35,6 +35,7 @@ const SuspiciousSchema = new mongoose.Schema({
   ip: String,
   attempts: Number,
   timestamp: Number,
+  userId: String,        
 });
 const SuspiciousRequest = mongoose.model('SuspiciousRequest', SuspiciousSchema);
 
@@ -49,7 +50,7 @@ const BlockedIPSchema = new mongoose.Schema({
 const BlockedIP = mongoose.model('BlockedIP', BlockedIPSchema);
 
 export {
-  DevUser,
+  AppConfig,
   ActivityLog,
   SuspiciousRequest,
   BlockedIP,
