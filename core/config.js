@@ -8,6 +8,16 @@ await mongoose.connect(MONGO_URI, {
   useUnifiedTopology: true,
 });
 
+// Login Attempt Schema
+const LoginAttemptSchema = new mongoose.Schema({
+  appId: String,
+  userId: String,
+  ip: String,
+  status: String, // 'success' or 'fail'
+  timestamp: Number,
+});
+
+const LoginAttempt = mongoose.model('LoginAttempt', LoginAttemptSchema);
 // App-specific config (for rate limits)
 const AppConfigSchema = new mongoose.Schema({
   appId: { type: String, unique: true },
