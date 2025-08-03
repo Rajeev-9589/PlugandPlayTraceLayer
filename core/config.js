@@ -64,4 +64,5 @@ export {
   ActivityLog,
   SuspiciousRequest,
   BlockedIP,
+  LoginAttempt
 };
