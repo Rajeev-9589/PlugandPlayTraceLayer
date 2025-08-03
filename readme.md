@@ -1,5 +1,5 @@
 # PlugandPlayTraceLayer
-Plugandplay Version of tracelayer, open source project at the githhub -https://github.com/Rajeev-9589/TraceLayer.git
+Plugandplay Version of tracelayer, open source project at the github -https://github.com/Rajeev-9589/TraceLayer.git
 
 # 🔐 TraceLayer
 
@@ -25,4 +25,4 @@ It helps developers secure their APIs by logging suspicious behavior, blocking a
 Install TraceLayer directly from GitHub:
 
 ```bash
-npm install git+https://github.com/your-username/tracelayer.git
+npm install git+https://github.com/Rajeev-9589/tracelayer.git

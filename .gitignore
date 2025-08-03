@@ -1,5 +1,4 @@
 node_modules/
 .env
 __tests__/tracelayer.test.mjs
-core/index.js
 jest.config.js

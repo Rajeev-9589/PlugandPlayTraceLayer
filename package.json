@@ -14,12 +14,12 @@
   "author": "Rajeev Bhorgade",
   "license": "MIT",
   "dependencies": {
-    "mongoose": "^7.6.0"
+    "mongoose": "^7.6.0",
+    "node-fetch": "^3.3.2"
   },
   "scripts": {
- "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
-
-},
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
   "devDependencies": {
     "jest": "^30.0.5",
     "supertest": "^7.1.4"
