@@ -59,10 +59,14 @@ const BlockedIPSchema = new mongoose.Schema({
 });
 const BlockedIP = mongoose.model('BlockedIP', BlockedIPSchema);
 
+async function getConfig(appId) {
+  return await AppConfig.findOne({ appId });
+}
 export {
   AppConfig,
   ActivityLog,
   SuspiciousRequest,
   BlockedIP,
-  LoginAttempt
+  LoginAttempt,
+  getConfig
 };
