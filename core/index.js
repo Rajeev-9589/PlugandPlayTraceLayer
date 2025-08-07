@@ -6,7 +6,7 @@ import {
   getBlockedIPs,
   manuallyBlockIP,
 } from './helper.js';
-export { syncLogsToCloud } from '../core/utils/syncLogstoCloud.js';
+export { syncLogsToCloud } from './utils/syncLogstoCloud.js';
 
 export {
   traceMiddleware,
