@@ -4,8 +4,9 @@ import {
   LoginAttempt,
   BlockedIP,
   SuspiciousRequest,
-  AppConfig, 
-} from "../config.js";
+  AppConfig,
+  connectDB,
+} from "../config.js"; 
 
 async function getConfig(appId) {
   return AppConfig.findOne({ appId });
@@ -16,15 +17,17 @@ async function getConfig(appId) {
  */
 export async function syncLogsToCloud(appId, apiKey) {
   try {
+    // Ensure DB is connected before any DB calls
+    await connectDB();
+
+    // 1. Fetch app config
     const config = await getConfig(appId);
     if (!config) {
       return { success: false, message: "App not found" };
     }
 
-    // 1. Fetch unsynced Activity Logs
+    // 2. Fetch logs
     const activityLogs = await ActivityLog.find({ appId, synced: false }).lean();
-
-    // 2. Fetch full collection for others
     const loginAttempts = await LoginAttempt.find({ appId }).lean();
     const blockedIPs = await BlockedIP.find({ appId }).lean();
     const suspiciousRequests = await SuspiciousRequest.find({ appId }).lean();
@@ -39,14 +42,14 @@ export async function syncLogsToCloud(appId, apiKey) {
       suspiciousRequests,
     };
 
-    // 4. Send to Cloud API
+    // 4. Send to TraceLayer Cloud API
     const response = await axios.post(
       process.env.TRACELAYER_API_URL || "https://tracelayer-cloud-api.vercel.app/api/synclogs",
       payload
     );
 
+    // 5. On success, mark synced ActivityLogs
     if (response.data && response.data.success) {
-      // 5. Mark only ActivityLogs as synced
       const syncedIds = activityLogs.map((log) => log._id);
       if (syncedIds.length > 0) {
         await ActivityLog.updateMany(
