@@ -69,7 +69,6 @@ async function getConfig(appId) {
   return await AppConfig.findOne({ appId });
 }
 export {
-  connectDB,
   AppConfig,
   ActivityLog,
   SuspiciousRequest,
