@@ -2,7 +2,8 @@
   "name": "tracelayer",
   "version": "1.0.0",
   "type": "module",
-  "exports": "./core/traceMiddleware.js",
+  "main": "./core/index.js",
+  "exports": "./core/index.js",
   "description": "Plugandplay Version of tracelayer, open source project at the github - https://github.com/Rajeev-9589/TraceLayer.git",
   "keywords": [
     "express",
