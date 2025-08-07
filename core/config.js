@@ -3,11 +3,17 @@ import mongoose from 'mongoose';
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/tracelayer';
 
-await mongoose.connect(MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+let isConnected = false;
 
+export async function connectDB() {
+  if (!isConnected) {
+    await mongoose.connect(MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    isConnected = true;
+  }
+}
 // Login Attempt Schema
 const LoginAttemptSchema = new mongoose.Schema({
   appId: String,
@@ -63,6 +69,7 @@ async function getConfig(appId) {
   return await AppConfig.findOne({ appId });
 }
 export {
+  connectDB,
   AppConfig,
   ActivityLog,
   SuspiciousRequest,
